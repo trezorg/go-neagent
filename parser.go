@@ -6,7 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func getLinks(body string, selector string) ([]string, error) {
+func getLinks(body string, selector string) (*[]string, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
 	if err != nil {
 		return nil, err
@@ -19,13 +19,13 @@ func getLinks(body string, selector string) ([]string, error) {
 			links = append(links, link)
 		}
 	})
-	return links, nil
+	return &links, nil
 }
 
-func getPages(body string) ([]string, error) {
+func getPages(body string) (*[]string, error) {
 	return getLinks(body, ".page_numbers a")
 }
 
-func getPageLinks(body string) ([]string, error) {
+func getPageLinks(body string) (*[]string, error) {
 	return getLinks(body, ".imd_photo a")
 }

@@ -86,13 +86,21 @@ func iteration(args *neagentArgs, db *sql.DB) {
 	}
 }
 
+func startProcessing(args *neagentArgs, database *sql.DB) {
+	iteration(args, database)
+	for range time.NewTicker(time.Duration(args.Timeout) * time.Second).C {
+		iteration(args, database)
+	}
+}
+
 func main() {
 	args, err := prepareParams()
 	failIfError(err)
 	database, err := createDataBase(args.Database)
 	failIfError(err)
-	iteration(args, database)
-	for range time.NewTicker(time.Duration(args.Timeout) * time.Second).C {
-		iteration(args, database)
+	if args.Daemon {
+		startDaemon(startProcessing, args, database)
+	} else {
+		startProcessing(args, database)
 	}
 }

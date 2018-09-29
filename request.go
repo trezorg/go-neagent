@@ -90,7 +90,7 @@ func parsePageUrls(client *http.Client, in <-chan strResult, fout chan chan strR
 				out <- strResult{error: err}
 				continue
 			}
-			for _, link := range links {
+			for _, link := range *links {
 				out <- strResult{result: link}
 			}
 		}
@@ -132,7 +132,7 @@ func parseMainPage(url string, client *http.Client) <-chan strResult {
 			out <- strResult{error: err}
 			return
 		}
-		for _, link := range links {
+		for _, link := range *links {
 			out <- strResult{result: link}
 		}
 	}()

@@ -8,6 +8,7 @@ const (
 	defaultConfigFile = "neagent.conf"
 	defaultTimeout    = 3600
 	telegramLink      = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s"
+	daemonWorkDir     = "./"
 )
 
 var (

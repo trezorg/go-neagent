@@ -1,0 +1,4 @@
+cid = "xxxxxxxxx"
+bot = "xxxxxxxxxxxxx"
+file = "~/neagent.txt"
+database = "~/neagent.db"
