@@ -39,7 +39,9 @@ func prepareParams() (*neagentArgs, error) {
 }
 
 func iteration(args *neagentArgs, db *sql.DB) {
-	log.Println("Starting processing...")
+	if args.Verbose {
+		log.Println("Starting processing...")
+	}
 	client, err := prepareClient()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -47,7 +49,7 @@ func iteration(args *neagentArgs, db *sql.DB) {
 	}
 	ctx, done := context.WithCancel(context.Background())
 	defer done()
-	cn := parsePages(parseMainPage(args.Link, client), client)
+	cn := parsePages(parseMainPage(args, client), client)
 	var links []string
 	for res := range orDone(ctx, bridge(ctx, cn)) {
 		if res.error != nil {
@@ -80,9 +82,14 @@ func iteration(args *neagentArgs, db *sql.DB) {
 			fmt.Fprintf(os.Stderr, "Error on file writing: %v\n", err)
 		}
 	}
-	err = telegramMessage(args.Bot, args.Cid, newLinks, client)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error on telegram messaging: %v\n", err)
+	if args.Telegram {
+		if args.Verbose {
+			log.Println("Sending telegram message...")
+		}
+		err = telegramMessage(args.Bot, args.Cid, newLinks, client)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error on telegram messaging: %v\n", err)
+		}
 	}
 }
 
@@ -96,6 +103,9 @@ func startProcessing(args *neagentArgs, database *sql.DB) {
 func main() {
 	args, err := prepareParams()
 	failIfError(err)
+	if args.Verbose {
+		log.Println("Creating database...")
+	}
 	database, err := createDataBase(args.Database)
 	failIfError(err)
 	if args.Daemon {

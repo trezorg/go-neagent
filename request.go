@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"runtime"
@@ -97,10 +98,17 @@ func parsePageUrls(client *http.Client, in <-chan strResult, fout chan chan strR
 	}()
 }
 
-func parseMainPage(url string, client *http.Client) <-chan strResult {
+func parseMainPage(args *neagentArgs, client *http.Client) <-chan strResult {
 	out := make(chan strResult)
 
+	url := args.Link
+
 	go func() {
+
+		if args.Verbose {
+			log.Println(fmt.Sprintf("Getting page %s...", url))
+		}
+
 		defer close(out)
 		out <- strResult{result: url}
 		req, err := http.NewRequest("GET", url, nil)

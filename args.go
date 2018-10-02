@@ -23,6 +23,7 @@ func prepareArgs() neagentArgs {
 	verbosePtr := flag.Bool("v", false, "Verbose mode")
 	daemonPtr := flag.Bool("d", false, "Daemon mode")
 	stdoutPtr := flag.Bool("s", false, "Print results to stdout")
+	telPtr := flag.Bool("tel", false, "Send results to telegram")
 	flag.Parse()
 	return neagentArgs{
 		*databasePtr,
@@ -35,6 +36,7 @@ func prepareArgs() neagentArgs {
 		*verbosePtr,
 		*daemonPtr,
 		*stdoutPtr,
+		*telPtr,
 	}
 }
 
@@ -85,7 +87,7 @@ func readConfig(args *neagentArgs, filename string) error {
 	for _, flag := range []string{"Timeout"} {
 		setIntOption(args, flag, options)
 	}
-	for _, flag := range []string{"Verbose", "Daemon", "Stdout"} {
+	for _, flag := range []string{"Verbose", "Daemon", "Stdout", "Telegram"} {
 		err := setBoolOption(args, flag, options)
 		if err != nil {
 			return err
@@ -107,7 +109,7 @@ func readConfigs(filename string) (*neagentArgs, error) {
 		argsConfig, _ := filepath.Abs(filename)
 		configs = append(configs, argsConfig)
 	}
-	args := &neagentArgs{"", "", "", "", "", "", 0, false, false, false}
+	args := &neagentArgs{"", "", "", "", "", "", 0, false, false, false, false}
 	for _, name := range configs {
 		readConfig(args, name)
 	}
@@ -125,11 +127,13 @@ func checkConfig(args *neagentArgs) error {
 }
 
 func checkArgs(args *neagentArgs) error {
-	if len(args.Bot) == 0 {
-		return fmt.Errorf("No bot argument has been supplied")
-	}
-	if len(args.Cid) == 0 {
-		return fmt.Errorf("No cid argument has been supplied")
+	if args.Telegram {
+		if len(args.Bot) == 0 {
+			return fmt.Errorf("No bot argument has been supplied")
+		}
+		if len(args.Cid) == 0 {
+			return fmt.Errorf("No cid argument has been supplied")
+		}
 	}
 	if len(args.Database) == 0 {
 		return fmt.Errorf("No database argument has been supplied")
@@ -142,12 +146,12 @@ func checkArgs(args *neagentArgs) error {
 	}
 	err := checkFilePermissions(args.Database, os.O_WRONLY|os.O_CREATE)
 	if err != nil {
-		return nil
+		return err
 	}
 	if len(args.File) > 0 {
 		err = checkFilePermissions(args.File, os.O_WRONLY|os.O_CREATE)
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 	return nil
@@ -196,6 +200,9 @@ func mergeConfigs(args *neagentArgs, configArgs *neagentArgs) *neagentArgs {
 	}
 	if configArgs.Daemon {
 		args.Daemon = configArgs.Daemon
+	}
+	if configArgs.Telegram {
+		args.Telegram = configArgs.Telegram
 	}
 	return args
 }

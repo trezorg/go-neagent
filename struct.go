@@ -11,6 +11,7 @@ type neagentArgs struct {
 	Verbose  bool
 	Daemon   bool
 	Stdout   bool
+	Telegram bool
 }
 
 type strResult struct {
