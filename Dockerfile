@@ -9,6 +9,7 @@ RUN go get github.com/PuerkitoBio/goquery \
     CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o neagent . && \
     useradd -M -N -o -u 1000 neagent
 FROM scratch
+ENV USER=neagent
 COPY --from=builder /build/neagent /app/
 COPY --from=builder /etc/passwd /etc/passwd
 WORKDIR /app
